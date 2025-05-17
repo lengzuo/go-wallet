@@ -32,9 +32,14 @@ type DatabaseConfig struct {
 	DSN string
 }
 
+type RedisConfig struct {
+	URL string
+}
+
 type Config struct {
 	Mode           Mode
 	DatabaseConfig *DatabaseConfig
+	RedisConfig    *RedisConfig
 }
 
 func New() (*Config, error) {
@@ -47,6 +52,9 @@ func New() (*Config, error) {
 	return &Config{
 		DatabaseConfig: &DatabaseConfig{
 			DSN: os.Getenv("DATABASE_DSN"),
+		},
+		RedisConfig: &RedisConfig{
+			URL: os.Getenv("REDIS_URL"),
 		},
 		Mode: getMode(),
 	}, nil

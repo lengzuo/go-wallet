@@ -54,6 +54,7 @@ const (
 	CodeInternalServerError = "INTERNAL_SERVER_ERROR"
 	CodeConflict            = "CONFLICT"
 	CodeUnprocessabled      = "UNPROCESSIABLED"
+	CodeServiceUnavailable  = "SERVICE_UNAVAILABLE"
 )
 
 func BadRequest(message string) JSON {
@@ -71,4 +72,16 @@ func Unauthenticated() JSON {
 
 func Unprocessable(message string) JSON {
 	return NewJSON(http.StatusUnprocessableEntity, CodeUnprocessabled, message, errors.New(message))
+}
+
+func Conflict(message string) JSON {
+	return NewJSON(http.StatusConflict, CodeConflict, message, errors.New(message))
+}
+
+func ServiceUnavailable(message string) JSON {
+	return NewJSON(http.StatusServiceUnavailable, CodeServiceUnavailable, message, errors.New(message))
+}
+
+func Forbidden(message string) JSON {
+	return NewJSON(http.StatusForbidden, CodeForbidden, message, errors.New(message))
 }

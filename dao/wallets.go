@@ -17,10 +17,10 @@ import (
 
 //go:generate mockery --name WalletsRepository --output ./mocks --outpkg mocks --case=underscore
 type WalletsRepository interface {
-	Deposit(ctx context.Context, username, currency string, amount int) error
-	Withdraw(ctx context.Context, username, currency string, amount int) error
+	Deposit(ctx context.Context, username, reference, currency string, amount int) error
+	Withdraw(ctx context.Context, username, reference, currency string, amount int) error
 	Balance(ctx context.Context, username string, currencies []string) ([]WalletsModel, error)
-	Transfer(ctx context.Context, sender, receiver, currency string, amount int) error
+	Transfer(ctx context.Context, sender, receiver, reference, currency string, amount int) error
 	Get(ctx context.Context, username, currency string) (*WalletsModel, error)
 }
 
@@ -43,15 +43,16 @@ func NewWallets(dao *DAO) *wallets {
 	}
 }
 
-func (p *wallets) Deposit(ctx context.Context, username, currency string, amount int) error {
+func (p *wallets) Deposit(ctx context.Context, username, reference, currency string, amount int) error {
 	return lockExecution(ctx, p.db, func(exec sqlx.ExtContext) error {
-		transaction := &TransactionsModel{
+		transaction := TransactionsModel{
 			UID:         utils.UUID(),
 			Type:        TypeDeposit,
 			InitiatedBy: username,
 			Status:      StatusCompleted,
 			Amount:      amount,
 			Currency:    currency,
+			Reference:   reference,
 		}
 		err := insertTransaction(ctx, exec, transaction)
 		if err != nil {
@@ -62,15 +63,16 @@ func (p *wallets) Deposit(ctx context.Context, username, currency string, amount
 	})
 }
 
-func (p *wallets) Withdraw(ctx context.Context, username, currency string, amount int) error {
+func (p *wallets) Withdraw(ctx context.Context, username, reference, currency string, amount int) error {
 	return lockExecution(ctx, p.db, func(exec sqlx.ExtContext) error {
-		transaction := &TransactionsModel{
+		transaction := TransactionsModel{
 			UID:         utils.UUID(),
 			Type:        TypeWithdraw,
 			InitiatedBy: username,
 			Status:      StatusCompleted,
 			Amount:      amount,
 			Currency:    currency,
+			Reference:   reference,
 		}
 		err := insertTransaction(ctx, exec, transaction)
 		if err != nil {
@@ -107,7 +109,7 @@ func (p *wallets) Balance(ctx context.Context, username string, currencies []str
 	return wallets, nil
 }
 
-func (p *wallets) Transfer(ctx context.Context, sender, receiver, currency string, amount int) error {
+func (p *wallets) Transfer(ctx context.Context, sender, receiver, reference, currency string, amount int) error {
 	return lockExecution(ctx, p.db, func(exec sqlx.ExtContext) error {
 		strs := []string{sender, receiver}
 		// Sort the keys to ensure select...for update always in the same sequence for both user, eg, user A transfer to user B and user B transfer to user A at the same time.
@@ -123,13 +125,14 @@ func (p *wallets) Transfer(ctx context.Context, sender, receiver, currency strin
 			return err
 		}
 
-		transaction := &TransactionsModel{
+		transaction := TransactionsModel{
 			UID:         utils.UUID(),
 			Type:        TypeTransfer,
 			InitiatedBy: sender,
 			Status:      StatusCompleted,
 			Amount:      amount,
 			Currency:    currency,
+			Reference:   reference,
 		}
 		err = insertTransaction(ctx, exec, transaction)
 		if err != nil {

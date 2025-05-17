@@ -39,8 +39,8 @@ func Test_wallets_Deposit(t *testing.T) {
 	t.Run("ok, deposit wallet no error", func(t *testing.T) {
 		mock.ExpectBegin().WillReturnError(nil)
 
-		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status) VALUES ($1,$2,$3,$4,$5,$6)").
-			WithArgs(sqlmock.AnyArg(), "deposit", "name", "SGD", 100, "completed").
+		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status,reference) VALUES ($1,$2,$3,$4,$5,$6,$7)").
+			WithArgs(sqlmock.AnyArg(), "deposit", "name", "SGD", 100, "completed", "ref").
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("UPDATE wallets SET updated_at = NOW(), amount = amount + $1 WHERE currency = $2 AND username = $3").
@@ -53,7 +53,7 @@ func Test_wallets_Deposit(t *testing.T) {
 
 		mock.ExpectCommit().WillReturnError(nil)
 
-		err := p.Deposit(t.Context(), "name", "SGD", 100)
+		err := p.Deposit(t.Context(), "name", "ref", "SGD", 100)
 		assert.NoError(t, err, "deposit err")
 		assert.NoError(t, mock.ExpectationsWereMet(), "unfulfilled expectations")
 	})
@@ -61,8 +61,8 @@ func Test_wallets_Deposit(t *testing.T) {
 	t.Run("insert deposit ledgers error", func(t *testing.T) {
 		mock.ExpectBegin().WillReturnError(nil)
 
-		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status) VALUES ($1,$2,$3,$4,$5,$6)").
-			WithArgs(sqlmock.AnyArg(), "deposit", "name", "SGD", 100, "completed").
+		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status,reference) VALUES ($1,$2,$3,$4,$5,$6,$7)").
+			WithArgs(sqlmock.AnyArg(), "deposit", "name", "SGD", 100, "completed", "ref").
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("UPDATE wallets SET updated_at = NOW(), amount = amount + $1 WHERE currency = $2 AND username = $3").
@@ -75,7 +75,7 @@ func Test_wallets_Deposit(t *testing.T) {
 
 		mock.ExpectRollback().WillReturnError(nil)
 
-		err := p.Deposit(t.Context(), "name", "SGD", 100)
+		err := p.Deposit(t.Context(), "name", "ref", "SGD", 100)
 		assert.Error(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet(), "unfulfilled expectations")
 	})
@@ -83,8 +83,8 @@ func Test_wallets_Deposit(t *testing.T) {
 	t.Run("update deposit wallets error", func(t *testing.T) {
 		mock.ExpectBegin().WillReturnError(nil)
 
-		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status) VALUES ($1,$2,$3,$4,$5,$6)").
-			WithArgs(sqlmock.AnyArg(), "deposit", "name", "SGD", 100, "completed").
+		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status,reference) VALUES ($1,$2,$3,$4,$5,$6,$7)").
+			WithArgs(sqlmock.AnyArg(), "deposit", "name", "SGD", 100, "completed", "ref").
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("UPDATE wallets SET updated_at = NOW(), amount = amount + $1 WHERE currency = $2 AND username = $3").
@@ -93,7 +93,7 @@ func Test_wallets_Deposit(t *testing.T) {
 
 		mock.ExpectRollback().WillReturnError(nil)
 
-		err := p.Deposit(t.Context(), "name", "SGD", 100)
+		err := p.Deposit(t.Context(), "name", "ref", "SGD", 100)
 		assert.Error(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet(), "unfulfilled expectations")
 	})
@@ -101,20 +101,20 @@ func Test_wallets_Deposit(t *testing.T) {
 	t.Run("insert deposit transactions error", func(t *testing.T) {
 		mock.ExpectBegin().WillReturnError(nil)
 
-		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status) VALUES ($1,$2,$3,$4,$5,$6)").
-			WithArgs(sqlmock.AnyArg(), "deposit", "name", "SGD", 100, "completed").
+		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status,reference) VALUES ($1,$2,$3,$4,$5,$6,$7)").
+			WithArgs(sqlmock.AnyArg(), "deposit", "name", "SGD", 100, "completed", "ref").
 			WillReturnError(errors.New("err"))
 
 		mock.ExpectRollback().WillReturnError(nil)
 
-		err := p.Deposit(t.Context(), "name", "SGD", 100)
+		err := p.Deposit(t.Context(), "name", "ref", "SGD", 100)
 		assert.Error(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet(), "unfulfilled expectations")
 	})
 
 	t.Run("begin deposit tx error", func(t *testing.T) {
 		mock.ExpectBegin().WillReturnError(errors.New("err"))
-		err := p.Deposit(t.Context(), "name", "SGD", 100)
+		err := p.Deposit(t.Context(), "name", "ref", "SGD", 100)
 		assert.Error(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet(), "unfulfilled expectations")
 	})
@@ -134,8 +134,8 @@ func Test_wallets_Withdraw(t *testing.T) {
 	t.Run("ok, withdraw wallet no error", func(t *testing.T) {
 		mock.ExpectBegin().WillReturnError(nil)
 
-		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status) VALUES ($1,$2,$3,$4,$5,$6)").
-			WithArgs(sqlmock.AnyArg(), "withdraw", "name2", "SGD", 100, "completed").
+		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status,reference) VALUES ($1,$2,$3,$4,$5,$6,$7)").
+			WithArgs(sqlmock.AnyArg(), "withdraw", "name2", "SGD", 100, "completed", "ref").
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("UPDATE wallets SET updated_at = NOW(), amount = amount + $1 WHERE currency = $2 AND username = $3 AND amount >= $4").
@@ -148,7 +148,7 @@ func Test_wallets_Withdraw(t *testing.T) {
 
 		mock.ExpectCommit().WillReturnError(nil)
 
-		err := p.Withdraw(t.Context(), "name2", "SGD", 100)
+		err := p.Withdraw(t.Context(), "name2", "ref", "SGD", 100)
 		assert.NoError(t, err, "withdraw err")
 		assert.NoError(t, mock.ExpectationsWereMet(), "unfulfilled expectations")
 	})
@@ -156,8 +156,8 @@ func Test_wallets_Withdraw(t *testing.T) {
 	t.Run("insert withdraw ledgers error", func(t *testing.T) {
 		mock.ExpectBegin().WillReturnError(nil)
 
-		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status) VALUES ($1,$2,$3,$4,$5,$6)").
-			WithArgs(sqlmock.AnyArg(), "withdraw", "name2", "SGD", 100, "completed").
+		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status,reference) VALUES ($1,$2,$3,$4,$5,$6,$7)").
+			WithArgs(sqlmock.AnyArg(), "withdraw", "name2", "SGD", 100, "completed", "ref").
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("UPDATE wallets SET updated_at = NOW(), amount = amount + $1 WHERE currency = $2 AND username = $3 AND amount >= $4").
@@ -170,7 +170,7 @@ func Test_wallets_Withdraw(t *testing.T) {
 
 		mock.ExpectRollback().WillReturnError(nil)
 
-		err := p.Withdraw(t.Context(), "name2", "SGD", 100)
+		err := p.Withdraw(t.Context(), "name2", "ref", "SGD", 100)
 		assert.Error(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet(), "unfulfilled expectations")
 	})
@@ -178,8 +178,8 @@ func Test_wallets_Withdraw(t *testing.T) {
 	t.Run("update withdraw wallet error", func(t *testing.T) {
 		mock.ExpectBegin().WillReturnError(nil)
 
-		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status) VALUES ($1,$2,$3,$4,$5,$6)").
-			WithArgs(sqlmock.AnyArg(), "withdraw", "name2", "SGD", 100, "completed").
+		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status,reference) VALUES ($1,$2,$3,$4,$5,$6,$7)").
+			WithArgs(sqlmock.AnyArg(), "withdraw", "name2", "SGD", 100, "completed", "ref").
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("UPDATE wallets SET updated_at = NOW(), amount = amount + $1 WHERE currency = $2 AND username = $3 AND amount >= $4").
@@ -188,7 +188,7 @@ func Test_wallets_Withdraw(t *testing.T) {
 
 		mock.ExpectRollback().WillReturnError(nil)
 
-		err := p.Withdraw(t.Context(), "name2", "SGD", 100)
+		err := p.Withdraw(t.Context(), "name2", "ref", "SGD", 100)
 		assert.Error(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet(), "unfulfilled expectations")
 	})
@@ -196,20 +196,20 @@ func Test_wallets_Withdraw(t *testing.T) {
 	t.Run("insert withdraw transactions error", func(t *testing.T) {
 		mock.ExpectBegin().WillReturnError(nil)
 
-		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status) VALUES ($1,$2,$3,$4,$5,$6)").
-			WithArgs(sqlmock.AnyArg(), "withdraw", "name2", "SGD", 101, "completed").
+		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status,reference) VALUES ($1,$2,$3,$4,$5,$6,$7)").
+			WithArgs(sqlmock.AnyArg(), "withdraw", "name2", "SGD", 101, "completed", "ref").
 			WillReturnError(errors.New("err"))
 
 		mock.ExpectRollback().WillReturnError(nil)
 
-		err := p.Withdraw(t.Context(), "name2", "SGD", 101)
+		err := p.Withdraw(t.Context(), "name2", "ref", "SGD", 101)
 		assert.Error(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet(), "unfulfilled expectations")
 	})
 
 	t.Run("begin withdraw tx error", func(t *testing.T) {
 		mock.ExpectBegin().WillReturnError(errors.New("err"))
-		err := p.Withdraw(t.Context(), "name", "SGD", 100)
+		err := p.Withdraw(t.Context(), "name2", "ref", "SGD", 100)
 		assert.Error(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet(), "unfulfilled expectations")
 	})
@@ -342,8 +342,8 @@ func Test_wallets_Transfer(t *testing.T) {
 			WillReturnRows(rows).
 			WillReturnError(nil)
 
-		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status) VALUES ($1,$2,$3,$4,$5,$6)").
-			WithArgs(sqlmock.AnyArg(), "transfer", "name2", "SGD", 100, "completed").
+		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status,reference) VALUES ($1,$2,$3,$4,$5,$6,$7)").
+			WithArgs(sqlmock.AnyArg(), "transfer", "name2", "SGD", 100, "completed", "ref").
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("UPDATE wallets SET updated_at = NOW(), amount = amount + $1 WHERE currency = $2 AND username = $3 AND amount >= $4").
@@ -364,7 +364,7 @@ func Test_wallets_Transfer(t *testing.T) {
 
 		mock.ExpectCommit().WillReturnError(nil)
 
-		err = p.Transfer(t.Context(), "name2", "name1", "SGD", 100)
+		err = p.Transfer(t.Context(), "name2", "name1", "ref", "SGD", 100)
 		assert.NoError(t, err, "transfer err")
 		assert.NoError(t, mock.ExpectationsWereMet(), "unfulfilled expectations")
 	})
@@ -386,8 +386,8 @@ func Test_wallets_Transfer(t *testing.T) {
 			WillReturnRows(rows).
 			WillReturnError(nil)
 
-		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status) VALUES ($1,$2,$3,$4,$5,$6)").
-			WithArgs(sqlmock.AnyArg(), "transfer", "name1", "SGD", 100, "completed").
+		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status,reference) VALUES ($1,$2,$3,$4,$5,$6,$7)").
+			WithArgs(sqlmock.AnyArg(), "transfer", "name1", "SGD", 100, "completed", "ref").
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("UPDATE wallets SET updated_at = NOW(), amount = amount + $1 WHERE currency = $2 AND username = $3 AND amount >= $4").
@@ -408,7 +408,7 @@ func Test_wallets_Transfer(t *testing.T) {
 
 		mock.ExpectCommit().WillReturnError(nil)
 
-		err = p.Transfer(t.Context(), "name1", "name2", "SGD", 100)
+		err = p.Transfer(t.Context(), "name1", "name2", "ref", "SGD", 100)
 		assert.NoError(t, err, "transfer err")
 		assert.NoError(t, mock.ExpectationsWereMet(), "unfulfilled expectations")
 	})
@@ -430,8 +430,8 @@ func Test_wallets_Transfer(t *testing.T) {
 			WillReturnRows(rows).
 			WillReturnError(nil)
 
-		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status) VALUES ($1,$2,$3,$4,$5,$6)").
-			WithArgs(sqlmock.AnyArg(), "transfer", "name1", "SGD", 10, "completed").
+		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status,reference) VALUES ($1,$2,$3,$4,$5,$6,$7)").
+			WithArgs(sqlmock.AnyArg(), "transfer", "name1", "SGD", 10, "completed", "ref").
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("UPDATE wallets SET updated_at = NOW(), amount = amount + $1 WHERE currency = $2 AND username = $3 AND amount >= $4").
@@ -452,7 +452,7 @@ func Test_wallets_Transfer(t *testing.T) {
 
 		mock.ExpectRollback().WillReturnError(nil)
 
-		err = p.Transfer(t.Context(), "name1", "name2", "SGD", 10)
+		err = p.Transfer(t.Context(), "name1", "name2", "ref", "SGD", 10)
 		assert.Error(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet(), "unfulfilled expectations")
 	})
@@ -474,8 +474,8 @@ func Test_wallets_Transfer(t *testing.T) {
 			WillReturnRows(rows).
 			WillReturnError(nil)
 
-		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status) VALUES ($1,$2,$3,$4,$5,$6)").
-			WithArgs(sqlmock.AnyArg(), "transfer", "name1", "SGD", 10, "completed").
+		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status,reference) VALUES ($1,$2,$3,$4,$5,$6,$7)").
+			WithArgs(sqlmock.AnyArg(), "transfer", "name1", "SGD", 10, "completed", "ref").
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("UPDATE wallets SET updated_at = NOW(), amount = amount + $1 WHERE currency = $2 AND username = $3 AND amount >= $4").
@@ -492,7 +492,7 @@ func Test_wallets_Transfer(t *testing.T) {
 
 		mock.ExpectRollback().WillReturnError(nil)
 
-		err = p.Transfer(t.Context(), "name1", "name2", "SGD", 10)
+		err = p.Transfer(t.Context(), "name1", "name2", "ref", "SGD", 10)
 		assert.Error(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet(), "unfulfilled expectations")
 	})
@@ -514,8 +514,8 @@ func Test_wallets_Transfer(t *testing.T) {
 			WillReturnRows(rows).
 			WillReturnError(nil)
 
-		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status) VALUES ($1,$2,$3,$4,$5,$6)").
-			WithArgs(sqlmock.AnyArg(), "transfer", "name1", "SGD", 11, "completed").
+		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status,reference) VALUES ($1,$2,$3,$4,$5,$6,$7)").
+			WithArgs(sqlmock.AnyArg(), "transfer", "name1", "SGD", 11, "completed", "ref").
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("UPDATE wallets SET updated_at = NOW(), amount = amount + $1 WHERE currency = $2 AND username = $3 AND amount >= $4").
@@ -528,7 +528,7 @@ func Test_wallets_Transfer(t *testing.T) {
 
 		mock.ExpectRollback().WillReturnError(nil)
 
-		err = p.Transfer(t.Context(), "name1", "name2", "SGD", 11)
+		err = p.Transfer(t.Context(), "name1", "name2", "ref", "SGD", 11)
 		assert.Error(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet(), "unfulfilled expectations")
 	})
@@ -550,8 +550,8 @@ func Test_wallets_Transfer(t *testing.T) {
 			WillReturnRows(rows).
 			WillReturnError(nil)
 
-		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status) VALUES ($1,$2,$3,$4,$5,$6)").
-			WithArgs(sqlmock.AnyArg(), "transfer", "name1", "SGD", 10, "completed").
+		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status,reference) VALUES ($1,$2,$3,$4,$5,$6,$7)").
+			WithArgs(sqlmock.AnyArg(), "transfer", "name1", "SGD", 10, "completed", "ref").
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("UPDATE wallets SET updated_at = NOW(), amount = amount + $1 WHERE currency = $2 AND username = $3 AND amount >= $4").
@@ -560,7 +560,7 @@ func Test_wallets_Transfer(t *testing.T) {
 
 		mock.ExpectRollback().WillReturnError(nil)
 
-		err = p.Transfer(t.Context(), "name1", "name2", "SGD", 10)
+		err = p.Transfer(t.Context(), "name1", "name2", "ref", "SGD", 10)
 		assert.Error(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet(), "unfulfilled expectations")
 	})
@@ -582,13 +582,13 @@ func Test_wallets_Transfer(t *testing.T) {
 			WillReturnRows(rows).
 			WillReturnError(nil)
 
-		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status) VALUES ($1,$2,$3,$4,$5,$6)").
-			WithArgs(sqlmock.AnyArg(), "transfer", "name2", "SGD", 10, "completed").
+		mock.ExpectExec("INSERT INTO transactions (uid,type,initiated_by,currency,amount,status,reference) VALUES ($1,$2,$3,$4,$5,$6,$7)").
+			WithArgs(sqlmock.AnyArg(), "transfer", "name2", "SGD", 10, "completed", "ref").
 			WillReturnError(errors.New("err"))
 
 		mock.ExpectRollback().WillReturnError(nil)
 
-		err = p.Transfer(t.Context(), "name2", "name1", "SGD", 10)
+		err = p.Transfer(t.Context(), "name2", "name1", "ref", "SGD", 10)
 		assert.Error(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet(), "unfulfilled expectations")
 	})
@@ -608,7 +608,7 @@ func Test_wallets_Transfer(t *testing.T) {
 			WithArgs("name2", "SGD").
 			WillReturnError(errors.New("err"))
 		mock.ExpectRollback().WillReturnError(nil)
-		err = p.Transfer(t.Context(), "name2", "name1", "SGD", 100)
+		err = p.Transfer(t.Context(), "name2", "name1", "ref", "SGD", 10)
 		assert.Error(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet(), "unfulfilled expectations")
 	})
@@ -621,7 +621,7 @@ func Test_wallets_Transfer(t *testing.T) {
 			WithArgs("name1", "SGD").
 			WillReturnError(errors.New("err"))
 		mock.ExpectRollback().WillReturnError(nil)
-		err = p.Transfer(t.Context(), "name2", "name1", "SGD", 100)
+		err = p.Transfer(t.Context(), "name2", "name1", "ref", "SGD", 10)
 		assert.Error(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet(), "unfulfilled expectations")
 	})

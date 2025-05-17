@@ -6,17 +6,19 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/render"
 	"github.com/lengzuo/fundflow/configs"
 	"github.com/lengzuo/fundflow/dao"
-	"github.com/lengzuo/fundflow/internal/apierr"
 	"github.com/lengzuo/fundflow/pkg/log"
+	pkgredis "github.com/lengzuo/fundflow/pkg/redis"
+	"github.com/lengzuo/fundflow/server/middlewares"
+	"github.com/lengzuo/fundflow/usecases/users"
+	"github.com/lengzuo/fundflow/utils"
+	"github.com/redis/go-redis/v9"
 )
 
 func Serve() {
@@ -29,18 +31,33 @@ func Serve() {
 	serverCtx, serverStopCtx := context.WithTimeout(context.Background(), 60*time.Second)
 	defer serverStopCtx()
 
+	// Initialize Redis client
+	redisClient := pkgredis.New(config.RedisConfig.URL)
+
 	// Initialize Database client
-	_, err = dao.New(serverCtx, config.DatabaseConfig)
+	db, err := dao.New(serverCtx, config.DatabaseConfig)
 	if err != nil {
 		panic(fmt.Sprintf("failed to connect to database: %v", err))
 	}
 
+	// Initialize DAOs from database client above
+	userDAO := dao.NewUsers(db)
+	_ = dao.NewTransactions(db)
+	_ = dao.NewWallets(db)
+	_ = dao.NewLedgers(db)
+
+	// Initialize usecases
+	userServices := users.New(userDAO)
+
 	// The HTTP Server
 	server := &http.Server{
-		Addr:         "0.0.0.0:8080",
-		Handler:      router(),
-		ReadTimeout:  30 * time.Second,
-		WriteTimeout: 30 * time.Second,
+		Addr: "0.0.0.0:8080",
+		Handler: router(
+			redisClient,
+			userServices,
+		),
+		ReadTimeout:  3 * time.Second,
+		WriteTimeout: 3 * time.Second,
 	}
 
 	go func() {
@@ -65,13 +82,17 @@ func Serve() {
 	log.Info(serverCtx, "server shutdown successfully, quit signal: %s", quit.String())
 }
 
-func router() http.Handler {
+func router(
+	redisClient *redis.Client,
+	userServices users.Service,
+) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(60 * time.Second))
+	r.Use(middleware.Timeout(utils.APIRequestTimeout))
+	r.Use(middlewares.Idempotency(redisClient))
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("hi"))
@@ -83,21 +104,12 @@ func router() http.Handler {
 		w.Write([]byte("hi"))
 	})
 
-	return r
-}
+	r.Route("/api", func(apiRouter chi.Router) {
+		// No Auth API
+		apiRouter.Mount("/public/users", usersRouter(userServices))
+		// Auth API
 
-func AuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		authUsername := r.Header.Get("Authorization")
-		if strings.TrimSpace(authUsername) == "" {
-			err := apierr.Unauthorized()
-			render.Status(r, err.HTTPStatusCode())
-			render.JSON(w, r, err)
-			return
-		}
-		r = r.WithContext(context.WithValue(ctx, log.UsernameKey, authUsername))
-		log.Debug(ctx, "ddrun auth middleware")
-		next.ServeHTTP(w, r)
 	})
+
+	return r
 }

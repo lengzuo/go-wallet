@@ -44,17 +44,17 @@ func (_m *WalletsRepository) Balance(ctx context.Context, username string, curre
 	return r0, r1
 }
 
-// Deposit provides a mock function with given fields: ctx, username, currency, amount
-func (_m *WalletsRepository) Deposit(ctx context.Context, username string, currency string, amount int) error {
-	ret := _m.Called(ctx, username, currency, amount)
+// Deposit provides a mock function with given fields: ctx, username, reference, currency, amount
+func (_m *WalletsRepository) Deposit(ctx context.Context, username string, reference string, currency string, amount int) error {
+	ret := _m.Called(ctx, username, reference, currency, amount)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Deposit")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, int) error); ok {
-		r0 = rf(ctx, username, currency, amount)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, int) error); ok {
+		r0 = rf(ctx, username, reference, currency, amount)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -92,17 +92,17 @@ func (_m *WalletsRepository) Get(ctx context.Context, username string, currency 
 	return r0, r1
 }
 
-// Transfer provides a mock function with given fields: ctx, sender, receiver, currency, amount
-func (_m *WalletsRepository) Transfer(ctx context.Context, sender string, receiver string, currency string, amount int) error {
-	ret := _m.Called(ctx, sender, receiver, currency, amount)
+// Transfer provides a mock function with given fields: ctx, sender, receiver, reference, currency, amount
+func (_m *WalletsRepository) Transfer(ctx context.Context, sender string, receiver string, reference string, currency string, amount int) error {
+	ret := _m.Called(ctx, sender, receiver, reference, currency, amount)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Transfer")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, int) error); ok {
-		r0 = rf(ctx, sender, receiver, currency, amount)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string, int) error); ok {
+		r0 = rf(ctx, sender, receiver, reference, currency, amount)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -110,17 +110,17 @@ func (_m *WalletsRepository) Transfer(ctx context.Context, sender string, receiv
 	return r0
 }
 
-// Withdraw provides a mock function with given fields: ctx, username, currency, amount
-func (_m *WalletsRepository) Withdraw(ctx context.Context, username string, currency string, amount int) error {
-	ret := _m.Called(ctx, username, currency, amount)
+// Withdraw provides a mock function with given fields: ctx, username, reference, currency, amount
+func (_m *WalletsRepository) Withdraw(ctx context.Context, username string, reference string, currency string, amount int) error {
+	ret := _m.Called(ctx, username, reference, currency, amount)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Withdraw")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, int) error); ok {
-		r0 = rf(ctx, username, currency, amount)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, int) error); ok {
+		r0 = rf(ctx, username, reference, currency, amount)
 	} else {
 		r0 = ret.Error(0)
 	}

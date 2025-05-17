@@ -14,8 +14,38 @@ type TransactionsRepository struct {
 	mock.Mock
 }
 
+// GetByUID provides a mock function with given fields: ctx, uid
+func (_m *TransactionsRepository) GetByUID(ctx context.Context, uid string) (*dao.TransactionsModel, error) {
+	ret := _m.Called(ctx, uid)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByUID")
+	}
+
+	var r0 *dao.TransactionsModel
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*dao.TransactionsModel, error)); ok {
+		return rf(ctx, uid)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) *dao.TransactionsModel); ok {
+		r0 = rf(ctx, uid)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*dao.TransactionsModel)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, uid)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Insert provides a mock function with given fields: ctx, user
-func (_m *TransactionsRepository) Insert(ctx context.Context, user *dao.TransactionsModel) error {
+func (_m *TransactionsRepository) Insert(ctx context.Context, user dao.TransactionsModel) error {
 	ret := _m.Called(ctx, user)
 
 	if len(ret) == 0 {
@@ -23,13 +53,50 @@ func (_m *TransactionsRepository) Insert(ctx context.Context, user *dao.Transact
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *dao.TransactionsModel) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, dao.TransactionsModel) error); ok {
 		r0 = rf(ctx, user)
 	} else {
 		r0 = ret.Error(0)
 	}
 
 	return r0
+}
+
+// ListByReference provides a mock function with given fields: ctx, limit, startingAfter, reference, username
+func (_m *TransactionsRepository) ListByReference(ctx context.Context, limit int, startingAfter string, reference string, username string) ([]dao.TransactionsModel, bool, error) {
+	ret := _m.Called(ctx, limit, startingAfter, reference, username)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListByReference")
+	}
+
+	var r0 []dao.TransactionsModel
+	var r1 bool
+	var r2 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, string, string, string) ([]dao.TransactionsModel, bool, error)); ok {
+		return rf(ctx, limit, startingAfter, reference, username)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int, string, string, string) []dao.TransactionsModel); ok {
+		r0 = rf(ctx, limit, startingAfter, reference, username)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]dao.TransactionsModel)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int, string, string, string) bool); ok {
+		r1 = rf(ctx, limit, startingAfter, reference, username)
+	} else {
+		r1 = ret.Get(1).(bool)
+	}
+
+	if rf, ok := ret.Get(2).(func(context.Context, int, string, string, string) error); ok {
+		r2 = rf(ctx, limit, startingAfter, reference, username)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // NewTransactionsRepository creates a new instance of TransactionsRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

@@ -37,6 +37,7 @@ COMMENT ON COLUMN wallets.updated_at IS 'Timestamp when the wallet was last upda
 CREATE TABLE IF NOT EXISTS transactions (
     id SERIAL PRIMARY KEY,
     uid CHAR(20) NOT NULL,
+    reference VARCHAR(64) NOT NULL, 
     type VARCHAR(16) NOT NULL, 
     initiated_by VARCHAR(100) NOT NULL DEFAULT '',
     currency CHAR(3) NOT NULL,
@@ -47,9 +48,11 @@ CREATE TABLE IF NOT EXISTS transactions (
     updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc') NOT NULL
 );
 CREATE UNIQUE INDEX uk_uid ON transactions(uid);
+CREATE INDEX idx_reference_initiated_by ON transactions(reference,initiated_by,created_at DESC);
 
 COMMENT ON COLUMN transactions.id IS 'Unique transaction ID (auto-incremented)';
 COMMENT ON COLUMN transactions.uid IS 'Unique transaction ID (32 character UUID without hyphens)';
+COMMENT ON COLUMN transactions.reference IS 'Reference initaited by caller, such as their order number, their payment id';
 COMMENT ON COLUMN transactions.type IS 'The type of transaction (e.g., ''deposit'', ''withdrawal'', ''transfer'')';
 COMMENT ON COLUMN transactions.initiated_by IS 'The account initiating the transaction (It can be a wallet ID, or internal amdmin)';
 COMMENT ON COLUMN transactions.currency IS 'The currency used in the transaction (e.g., SGD, JPY and etc)';
