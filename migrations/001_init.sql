@@ -29,7 +29,7 @@ COMMENT ON COLUMN wallets.id IS 'Unique wallet ID (auto-incremented)';
 COMMENT ON COLUMN wallets.username IS 'Username of the user who owns this wallet';
 COMMENT ON COLUMN wallets.amount IS 'Wallet balance stored as a integer (smallest unit of currency)';
 COMMENT ON COLUMN wallets.currency IS 'Currency type (e.g., SGD, USD, EUR)';
-COMMENT ON COLUMN wallets.status IS 'The current status of the wallet, can be 'active' or 'frozen' ';
+COMMENT ON COLUMN wallets.status IS 'The current status of the wallet, can be active or frozen';
 COMMENT ON COLUMN wallets.created_at IS 'Timestamp when the wallet was created (defaults to current UTC time)';
 COMMENT ON COLUMN wallets.updated_at IS 'Timestamp when the wallet was last updated (defaults to current UTC time)';
 
@@ -60,7 +60,7 @@ COMMENT ON COLUMN transactions.created_at IS 'Timestamp when the transaction was
 COMMENT ON COLUMN transactions.updated_at IS 'Timestamp when the transaction was last updated (defaults to current UTC time)';
 
 
-CREATE TABLE ledgers (
+CREATE TABLE IF NOT EXISTS ledgers (
     id SERIAL PRIMARY KEY,
     tx_uid CHAR(20) NOT NULL,
     username VARCHAR(100) NOT NULL,

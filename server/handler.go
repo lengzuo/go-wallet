@@ -4,41 +4,46 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 
 	"github.com/go-chi/render"
 	"github.com/lengzuo/fundflow/internal/apierr"
+	"github.com/lengzuo/fundflow/pkg/log"
 	"github.com/lengzuo/fundflow/utils"
 )
 
+//go:generate mockery --name Params --output ./mocks --outpkg mocks --case=underscore
 type Params interface {
 	Validate() apierr.JSON
 }
 
+//go:generate mockery --name Responder --output ./mocks --outpkg mocks --case=underscore
 type Responder interface {
 	StatusCode() int
 }
 
-type TargetFunc[In Params, Out Responder] func(context.Context, In) (Out, apierr.JSON)
+type RestfulFunc[In Params, Out Responder] func(context.Context, In) (Out, apierr.JSON)
 
-func Handle[In Params, Out Responder](f TargetFunc[In, Out]) http.HandlerFunc {
+func Handle[In Params, Out Responder](f RestfulFunc[In, Out]) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var in In
 
 		// Retrieve data from request.
-		if r.Body != http.NoBody {
+		if r.Body != nil && r.Body != http.NoBody {
 			err := json.NewDecoder(r.Body).Decode(&in)
 			if err != nil {
-				// Format error response
-				http.Error(w, "invalid json", http.StatusBadRequest)
+				jsonErr := apierr.BadRequest("invalid json")
+				render.Status(r, jsonErr.HTTPStatusCode())
+				render.JSON(w, r, jsonErr)
 				return
 			}
 		}
 
 		// Parse any querystring
 		if err := utils.Decoder.Decode(&in, r.URL.Query()); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			jsonErr := apierr.BadRequest("invalid querystring")
+			render.Status(r, jsonErr.HTTPStatusCode())
+			render.JSON(w, r, jsonErr)
 			return
 		}
 
@@ -68,7 +73,7 @@ func Handle[In Params, Out Responder](f TargetFunc[In, Out]) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(out.StatusCode())
 		if err := json.NewEncoder(w).Encode(out); err != nil {
-			log.Printf("failed to encode json: %v", err)
+			log.Error(r.Context(), "failed to encode json: %v", err)
 			render.Status(r, http.StatusInternalServerError)
 			render.JSON(w, r, "unable to process response")
 			return

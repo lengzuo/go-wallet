@@ -21,7 +21,7 @@ func TestErrStatusCodeJSON(t *testing.T) {
 	})
 
 	t.Run("unauthorized error", func(t *testing.T) {
-		got := Unauthorized()
+		got := Unauthenticated()
 		assert.Equal(t, "unauthenticated", got.Error())
 		assert.Equal(t, http.StatusUnauthorized, got.HTTPStatusCode())
 	})

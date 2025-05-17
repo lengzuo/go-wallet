@@ -49,7 +49,7 @@ func NewJSON(statusCode int, code, message string, originalErr error) JSON {
 const (
 	CodeValidationFailed    = "VALIDATION_FAILED"
 	CodeNotFound            = "NOT_FOUND"
-	CodeUnauthorized        = "UNAUTHORIZED"
+	CodeUnauthenticated     = "UNAUTHENTICATED"
 	CodeForbidden           = "FORBIDDEN"
 	CodeInternalServerError = "INTERNAL_SERVER_ERROR"
 	CodeConflict            = "CONFLICT"
@@ -64,9 +64,9 @@ func InternalServer(message string) JSON {
 	return NewJSON(http.StatusInternalServerError, CodeInternalServerError, message, errors.New(message))
 }
 
-func Unauthorized() JSON {
+func Unauthenticated() JSON {
 	msg := "unauthenticated"
-	return NewJSON(http.StatusUnauthorized, CodeUnauthorized, msg, errors.New(msg))
+	return NewJSON(http.StatusUnauthorized, CodeUnauthenticated, msg, errors.New(msg))
 }
 
 func Unprocessable(message string) JSON {
